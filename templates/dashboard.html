@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoneyTrap — Attack Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #141720;
+      --border:   #1e2433;
+      --accent:   #f97316;
+      --accent2:  #3b82f6;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --danger:   #ef4444;
+      --success:  #22c55e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Layout ── */
+    .page { max-width: 1280px; margin: 0 auto; padding: 32px; }
+
+    .page-title {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Stat cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-value.orange { color: var(--accent); }
+    .stat-value.blue   { color: var(--accent2); }
+    .stat-value.red    { color: var(--danger); }
+
+    /* ── Grid layout ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header .badge {
+      font-size: 11px;
+      background: rgba(249,115,22,0.15);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .card-body { padding: 20px; }
+
+    /* ── Charts ── */
+    .chart-wrap {
+      position: relative;
+      height: 200px;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ── IP / method tags ── */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: monospace;
+    }
+
+    .tag-get  { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .tag-post { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .tag-other{ background: rgba(100,116,139,0.15);color: #94a3b8; }
+
+    .ip-text {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .path-text {
+      font-family: monospace;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    /* ── Bar chart (pure CSS) ── */
+    .bar-list { list-style: none; }
+
+    .bar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      color: var(--muted);
+      width: 90px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+    }
+
+    .bar-count {
+      font-size: 12px;
+      color: var(--text);
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Live feed ── */
+    .feed-row td { font-size: 12px; }
+
+    .ts { color: var(--muted); font-size: 11px; font-family: monospace; }
+
+    /* ── Refresh note ── */
+    .refresh-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 20px;
+    }
+
+    .refresh-note a { color: var(--accent); text-decoration: none; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty .big { font-size: 32px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🍯</div>
+      HoneyTrap
+    </div>
+    <div class="topbar-right">
+      <span><span class="live-dot"></span> Live</span>
+      <form method="POST" action="{{ url_for('dashboard_logout') }}" style="display:inline;">
+        <button type="submit" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;">Sign out</button>
+      </form>
+      <span>· <a href="{{ url_for('dashboard') }}" style="color:var(--accent);text-decoration:none;">Refresh</a></span>
+      <span>· <a href="{{ url_for('dashboard_export') }}" style="color:var(--accent2);text-decoration:none;">⬇ Export Excel</a></span>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-title">Attack Intelligence Dashboard</div>
+
+    <!-- Stat cards -->
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-label">Total Hits</div>
+        <div class="stat-value orange">{{ total }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Unique IPs</div>
+        <div class="stat-value blue">{{ unique_ips }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Countries Seen</div>
+        <div class="stat-value">{{ by_country|length }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Most Hit Endpoint</div>
+        <div class="stat-value red" style="font-size:16px; padding-top:8px;">
+          {% if top_paths %}{{ top_paths[0].path }}{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Row: timeline chart + methods -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          Attacks — Last 7 Days
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Top Targeted Endpoints</div>
+        <div class="card-body">
+          {% if top_paths %}
+            {% set max_hits = top_paths[0].hits %}
+            <ul class="bar-list">
+              {% for row in top_paths %}
+              <li class="bar-item">
+                <span class="bar-label" title="{{ row.path }}">{{ row.path }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: {{ (row.hits / max_hits * 100)|int }}%"></div>
+                </div>
+                <span class="bar-count">{{ row.hits }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="empty"><div class="big">🎣</div>Waiting for bots...</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Row: top IPs + countries -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          Top Attacking IPs
+          <span class="badge">Top {{ top_ips|length }}</span>
+        </div>
+        {% if top_ips %}
+        <table>
+          <thead>
+            <tr><th>IP Address</th><th>Country</th><th>Hits</th></tr>
+          </thead>
+          <tbody>
+            {% for row in top_ips %}
+            <tr>
+              <td><span class="ip-text">{{ row.ip }}</span></td>
+              <td>{{ row.country or '—' }}</td>
+              <td>{{ row.hits }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <div class="empty"><div class="big">📡</div>No data yet</div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-header">Attacks by Country</div>
+        <div class="card-body">
+          {% if by_country %}
+            {% set max_c = by_country[0].hits %}
+            <ul class="bar-list">
+              {% for row in by_country %}
+              <li class="bar-item">
+                <span class="bar-label">{{ row.country or 'Unknown' }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: {{ (row.hits / max_c * 100)|int }}%; background: var(--accent2);"></div>
+                </div>
+                <span class="bar-count">{{ row.hits }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="empty">No geo data yet</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Live attack feed -->
+    <div class="card">
+      <div class="card-header">
+        Live Attack Feed
+        <span class="badge">Last 30 hits</span>
+      </div>
+      {% if recent %}
+      <table>
+        <thead>
+          <tr>
+            <th>Time (UTC)</th>
+            <th>Method</th>
+            <th>Path</th>
+            <th>IP</th>
+            <th>Country</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hit in recent %}
+          <tr class="feed-row">
+            <td><span class="ts">{{ hit.timestamp }}</span></td>
+            <td>
+              <span class="tag {% if hit.method == 'GET' %}tag-get{% elif hit.method == 'POST' %}tag-post{% else %}tag-other{% endif %}">
+                {{ hit.method }}
+              </span>
+            </td>
+            <td><span class="path-text">{{ hit.path }}</span></td>
+            <td><span class="ip-text">{{ hit.ip }}</span></td>
+            <td>{{ hit.country or '—' }}</td>
+            <td style="color:var(--muted); max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              {{ hit.user_agent or '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="empty">
+          <div class="big">🍯</div>
+          Honeypot is live. Bots typically show up within a few hours of deployment.
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="refresh-note">
+      Data updates on page refresh · <a href="{{ url_for('dashboard') }}">↻ Refresh now</a>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    // ── Timeline chart ──
+    const timelineData = {
+      labels: [{% for row in by_day %}"{{ row.day }}"{% if not loop.last %},{% endif %}{% endfor %}],
+      datasets: [{
+        label: "Hits",
+        data: [{% for row in by_day %}{{ row.hits }}{% if not loop.last %},{% endif %}{% endfor %}],
+        borderColor: "#f97316",
+        backgroundColor: "rgba(249,115,22,0.1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: "#f97316",
+      }]
+    };
+
+    const ctx = document.getElementById("timelineChart");
+    if (ctx) {
+      new Chart(ctx, {
+        type: "line",
+        data: timelineData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { color: "#1e2433" },
+              ticks: { color: "#64748b", font: { size: 11 } }
+            },
+            y: {
+              grid: { color: "#1e2433" },
+              ticks: { color: "#64748b", font: { size: 11 } },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

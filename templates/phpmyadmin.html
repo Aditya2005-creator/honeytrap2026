@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>phpMyAdmin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f5f5f5; }
+    .header {
+      background: #3d3d3d; color: white; padding: 8px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .header img { width: 24px; }
+    .header span { font-size: 18px; font-weight: bold; color: #f89406; }
+    .header small { font-size: 11px; color: #aaa; }
+    .body { display: flex; height: calc(100vh - 42px); }
+    .sidebar {
+      width: 220px; background: #2a2a2a; color: #ccc;
+      padding: 12px 0; font-size: 13px; overflow-y: auto;
+    }
+    .sidebar .db-label {
+      padding: 6px 16px; color: #f89406; font-weight: bold; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .sidebar .db-item {
+      padding: 7px 16px 7px 24px; cursor: pointer; border-left: 3px solid transparent;
+    }
+    .sidebar .db-item:hover { background: #3a3a3a; border-left-color: #f89406; color: white; }
+    .main { flex: 1; padding: 24px; }
+    .welcome {
+      background: white; border: 1px solid #ddd; border-radius: 4px; padding: 24px;
+      max-width: 600px;
+    }
+    .welcome h2 { font-size: 16px; color: #333; margin-bottom: 12px; }
+    .welcome p { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 8px; }
+    .info-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+    .info-table td { padding: 6px 10px; border: 1px solid #eee; }
+    .info-table td:first-child { color: #888; width: 160px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span>phpMyAdmin</span>
+    <small>4.9.5 / MySQL 5.7.32</small>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <div class="db-label">Databases</div>
+      <div class="db-item">information_schema</div>
+      <div class="db-item">myapp_production</div>
+      <div class="db-item">myapp_staging</div>
+      <div class="db-item">mysql</div>
+      <div class="db-item">performance_schema</div>
+      <div class="db-item">wordpress_db</div>
+    </div>
+    <div class="main">
+      <div class="welcome">
+        <h2>Welcome to phpMyAdmin</h2>
+        <p>You are connected to the MySQL server. Use the left panel to browse databases and tables.</p>
+        <table class="info-table">
+          <tr><td>Server version</td><td>5.7.32-log</td></tr>
+          <tr><td>Protocol version</td><td>10</td></tr>
+          <tr><td>Server charset</td><td>UTF-8 Unicode (utf8)</td></tr>
+          <tr><td>phpMyAdmin version</td><td>4.9.5</td></tr>
+          <tr><td>PHP version</td><td>7.4.3</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  honeypot:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PRODUCTION=1
+      - DASHBOARD_KEY=${DASHBOARD_KEY:-changeme-set-a-strong-key}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+      - RETENTION_DAYS=${RETENTION_DAYS:-90}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-60}
+      - ALLOWED_DASHBOARD_IPS=${ALLOWED_DASHBOARD_IPS:-}
+    volumes:
+      - honeypot_data:/data
+    restart: unless-stopped
+
+volumes:
+  honeypot_data:

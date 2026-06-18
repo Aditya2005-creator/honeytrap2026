@@ -1,0 +1,10 @@
+# Replace honeypot.example.com with your real domain.
+# Caddy auto-provisions HTTPS via Let's Encrypt.
+#
+# Install: sudo apt install caddy
+# Run:     sudo caddy run --config Caddyfile
+# Or copy to /etc/caddy/Caddyfile and: sudo systemctl reload caddy
+
+honeypot.example.com {
+    reverse_proxy localhost:8000
+}
