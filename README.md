@@ -112,28 +112,6 @@ Visit your dashboard at: `http://localhost:5000/dashboard?key=honeytrap2024`
 
 ---
 
-## Deploy to Render (free, no credit card needed)
-
-Render is the easiest way to get a live public URL. Once deployed, real bots will find your server within hours.
-
-**Steps:**
-
-1. Push this project to a GitHub repository
-2. Go to [render.com](https://render.com) and sign up (free)
-3. Click **New → Web Service**
-4. Connect your GitHub repo
-5. Render auto-detects the settings from `render.yaml`
-6. Under **Environment Variables**, set:
-   - `DASHBOARD_KEY` = a strong secret password of your choice
-7. Click **Deploy**
-
-Your live URL will be something like `https://honeytrap-xxxx.onrender.com`
-
-**Dashboard:** `https://honeytrap-xxxx.onrender.com/dashboard?key=YOUR_SECRET`
-
-> **Note:** Render's free tier spins down after 15 minutes of inactivity. This is fine — bots will still wake it up. For 24/7 uptime, use Render's paid tier ($7/mo) or a VPS.
-
----
 
 ## What you'll see
 
@@ -147,16 +125,6 @@ Within hours of going live, you'll start seeing entries like:
 | 2024-11-12 05:01:19 | 194.165.16.3 | Netherlands | /phpmyadmin | zgrab/0.x |
 
 Common scanner User-Agents you'll discover: `Masscan`, `ZGrab`, `Shodan`, `python-requests`, `Go-http-client`, `curl`.
-
----
-
-## Changing your dashboard password
-
-Edit the environment variable `DASHBOARD_KEY` in your Render dashboard, or change the default in `app.py`:
-
-```python
-DASHBOARD_KEY = os.environ.get("DASHBOARD_KEY", "honeytrap2024")
-```
 
 ---
 
